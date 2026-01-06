@@ -1,3 +1,4 @@
 # Catch-all virtual alias mapping
 # Forward all emails to our processing script
-/^(.*)@DOMAIN_PLACEHOLDER$/   receive-email
+# Exclude system addresses (postmaster, abuse, etc.)
+/^(?!postmaster|abuse|admin|root|noreply)(.*)@DOMAIN_PLACEHOLDER$/   receive-email

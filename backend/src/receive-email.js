@@ -65,8 +65,28 @@ async function processEmail() {
       process.exit(0);
     }
 
-    // Process attachments
-    const attachments = parsed.attachments?.map(att => ({
+    // Process attachments with size and type validation
+    const MAX_ATTACHMENT_SIZE = 5 * 1024 * 1024; // 5MB per attachment
+    const ALLOWED_CONTENT_TYPES = [
+      'image/', 'text/', 'application/pdf', 'application/zip',
+      'application/msword', 'application/vnd.openxmlformats',
+      'application/vnd.ms-excel'
+    ];
+    
+    const attachments = parsed.attachments?.filter(att => {
+      // Filter by size
+      if (att.size > MAX_ATTACHMENT_SIZE) {
+        console.log(`Attachment ${att.filename} too large: ${att.size} bytes`);
+        return false;
+      }
+      // Filter by content type
+      const allowed = ALLOWED_CONTENT_TYPES.some(type => att.contentType.startsWith(type));
+      if (!allowed) {
+        console.log(`Attachment ${att.filename} type not allowed: ${att.contentType}`);
+        return false;
+      }
+      return true;
+    }).map(att => ({
       filename: att.filename,
       contentType: att.contentType,
       size: att.size,
@@ -96,8 +116,22 @@ async function processEmail() {
 }
 
 function extractEmailAddress(addressString) {
-  const match = addressString.match(/<(.+?)>/) || addressString.match(/([^\s]+@[^\s]+)/);
-  return match ? match[1].toLowerCase() : null;
+  // More robust email extraction handling various formats
+  // Remove any display names and extract email from angle brackets
+  const angleMatch = addressString.match(/<([^>]+)>/);
+  if (angleMatch) {
+    return angleMatch[1].trim().toLowerCase();
+  }
+  
+  // Extract email using more comprehensive pattern
+  const emailMatch = addressString.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+  if (emailMatch) {
+    return emailMatch[1].trim().toLowerCase();
+  }
+  
+  // Fallback to simple extraction
+  const simpleMatch = addressString.match(/([^\s]+@[^\s]+)/);
+  return simpleMatch ? simpleMatch[1].trim().toLowerCase() : null;
 }
 
 processEmail();
