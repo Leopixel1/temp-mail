@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  password     String
+  isAdmin      Boolean   @default(false)
+  isApproved   Boolean   @default(false)
+  isActive     Boolean   @default(true)
+  maxInboxes   Int       @default(5)
+  maxEmails    Int       @default(50)
+  retentionHours Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  inboxes      Inbox[]
+  loginEvents  LoginEvent[]
+
+  @@map("users")
+}
+
+model Inbox {
+  id          String    @id @default(uuid())
+  address     String    @unique
+  userId      String
+  createdAt   DateTime  @default(now())
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emails      Email[]
+
+  @@index([userId])
+  @@map("inboxes")
+}
+
+model Email {
+  id          String    @id @default(uuid())
+  inboxId     String
+  from        String
+  to          String
+  subject     String    @default("")
+  textBody    String    @default("")
+  htmlBody    String    @default("")
+  attachments Json?
+  receivedAt  DateTime  @default(now())
+  
+  inbox       Inbox     @relation(fields: [inboxId], references: [id], onDelete: Cascade)
+
+  @@index([inboxId])
+  @@index([receivedAt])
+  @@map("emails")
+}
+
+model LoginEvent {
+  id          String    @id @default(uuid())
+  userId      String
+  timestamp   DateTime  @default(now())
+  ipAddress   String?
+  userAgent   String?
+  success     Boolean
+  
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([timestamp])
+  @@map("login_events")
+}
+
+model SystemSettings {
+  id                    String    @id @default(uuid())
+  loginRequired         Boolean   @default(true)
+  registrationOpen      Boolean   @default(false)
+  defaultRetentionHours Int       @default(72)
+  maxInboxesPerUser     Int       @default(5)
+  maxEmailsPerInbox     Int       @default(50)
+  deleteOldOnLimit      Boolean   @default(true)
+  updatedAt             DateTime  @updatedAt
+
+  @@map("system_settings")
+}

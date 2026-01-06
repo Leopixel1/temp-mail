@@ -1,0 +1,99 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: tempmail-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tempmail}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tempmail123}
+      POSTGRES_DB: ${POSTGRES_DB:-tempmail}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tempmail-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tempmail}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tempmail-backend
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tempmail}:${POSTGRES_PASSWORD:-tempmail123}@postgres:5432/${POSTGRES_DB:-tempmail}
+      JWT_SECRET: ${JWT_SECRET}
+      DOMAIN: ${DOMAIN}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      DEFAULT_RETENTION_HOURS: ${DEFAULT_RETENTION_HOURS:-72}
+      MAX_INBOXES_PER_USER: ${MAX_INBOXES_PER_USER:-5}
+      MAX_EMAILS_PER_INBOX: ${MAX_EMAILS_PER_INBOX:-50}
+      REGISTRATION_OPEN: ${REGISTRATION_OPEN:-false}
+      LOGIN_REQUIRED: ${LOGIN_REQUIRED:-true}
+      DELETE_OLD_ON_LIMIT: ${DELETE_OLD_ON_LIMIT:-true}
+      RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
+      RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
+    volumes:
+      - ./backend/src/receive-email.js:/app/backend/src/receive-email.js:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tempmail-network
+    restart: unless-stopped
+    command: >
+      sh -c "
+        npm run prisma:push &&
+        npm start
+      "
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tempmail-frontend
+    environment:
+      VITE_API_URL: http://backend:3000
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      - backend
+    networks:
+      - tempmail-network
+    restart: unless-stopped
+
+  postfix:
+    build:
+      context: ./postfix
+      dockerfile: Dockerfile
+    container_name: tempmail-postfix
+    hostname: ${DOMAIN}
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports:
+      - "25:25"
+    volumes:
+      - ./backend/src/receive-email.js:/app/backend/src/receive-email.js:ro
+      - ./backend/node_modules:/app/backend/node_modules:ro
+      - ./backend/prisma:/app/backend/prisma:ro
+    depends_on:
+      - backend
+      - postgres
+    networks:
+      - tempmail-network
+    restart: unless-stopped
+
+networks:
+  tempmail-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

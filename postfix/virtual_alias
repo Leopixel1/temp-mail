@@ -1,0 +1,3 @@
+# Catch-all virtual alias mapping
+# Forward all emails to our processing script
+/^(.*)@DOMAIN_PLACEHOLDER$/   receive-email
