@@ -135,7 +135,7 @@ Check your inbox in the web interface - email should appear within seconds!
    
    **Option 2: Nginx Proxy Manager (Web GUI)**
    - Easy web-based SSL management
-   - See [docs/DEPLOYMENT.md](DEPLOYMENT.md#nginx-proxy-manager) for setup guide
+   - See [docs/DEPLOYMENT.md](DEPLOYMENT.md#option-b-nginx-proxy-manager) for setup guide
 
 2. **Configure Firewall**:
    ```bash

@@ -130,6 +130,12 @@ services:
     volumes:
       - ./data:/data
       - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - npm-network
+
+networks:
+  npm-network:
+    driver: bridge
 EOF
 
 # Start NPM

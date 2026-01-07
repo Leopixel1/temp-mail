@@ -294,16 +294,9 @@ sudo certbot --nginx -d mail.example.com
 ```
 
 **Option 2: Nginx Proxy Manager (Web GUI)**
-```bash
-# Install NPM
-mkdir -p ~/nginx-proxy-manager && cd ~/nginx-proxy-manager
-docker-compose up -d
-
-# Access web interface at http://your-ip:81
-# Configure proxy host with automatic SSL
-```
-
-See [docs/DEPLOYMENT.md](DEPLOYMENT.md#setup-ssltls) for detailed instructions on both options.
+- Easy-to-use web interface for SSL management
+- See [README.md](../README.md#option-2-nginx-proxy-manager-npm) for quick setup
+- See [DEPLOYMENT.md](DEPLOYMENT.md#option-b-nginx-proxy-manager) for detailed guide
 
 ### Can I use Nginx Proxy Manager (NPM) for SSL?
 
