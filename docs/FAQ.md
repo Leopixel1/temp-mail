@@ -282,7 +282,9 @@ See `README.md` for more Docker commands.
 - ✅ Professional appearance
 - ✅ Better SEO ranking
 
-Setup HTTPS:
+Setup HTTPS using one of these options:
+
+**Option 1: Nginx + Certbot (Command Line)**
 ```bash
 # Install certbot
 sudo apt install certbot python3-certbot-nginx
@@ -290,6 +292,41 @@ sudo apt install certbot python3-certbot-nginx
 # Get free SSL certificate
 sudo certbot --nginx -d mail.example.com
 ```
+
+**Option 2: Nginx Proxy Manager (Web GUI)**
+```bash
+# Install NPM
+mkdir -p ~/nginx-proxy-manager && cd ~/nginx-proxy-manager
+docker-compose up -d
+
+# Access web interface at http://your-ip:81
+# Configure proxy host with automatic SSL
+```
+
+See [docs/DEPLOYMENT.md](DEPLOYMENT.md#setup-ssltls) for detailed instructions on both options.
+
+### Can I use Nginx Proxy Manager (NPM) for SSL?
+
+**Yes!** Nginx Proxy Manager is an excellent choice for SSL management. It provides:
+
+**Benefits:**
+- ✅ User-friendly web interface (no command line needed)
+- ✅ Automatic SSL certificate requests from Let's Encrypt
+- ✅ Auto-renewal of certificates
+- ✅ Easy management of multiple domains
+- ✅ Built-in security features (HSTS, HTTP/2)
+- ✅ No manual Nginx configuration required
+
+**Quick Setup:**
+1. Install NPM using Docker
+2. Access admin interface on port 81
+3. Add proxy host for your domain
+4. Enable SSL with one click
+5. NPM handles everything automatically
+
+**Important**: If running NPM on the same server as Temp Mail, change Temp Mail's frontend port from `80:80` to `8080:80` in docker-compose.yml to avoid port conflicts.
+
+**Full Guide**: See [docs/DEPLOYMENT.md](DEPLOYMENT.md#option-b-nginx-proxy-manager) for complete NPM setup instructions.
 
 ### Should I allow open registration?
 
@@ -463,6 +500,48 @@ sudo netstat -tlnp | grep :80
 **Restart services:**
 ```bash
 docker-compose restart
+```
+
+### Port 80 is already in use
+
+If you get "port is already allocated" error when starting Temp Mail:
+
+**Cause**: Another service (like Nginx, Apache, or Nginx Proxy Manager) is using port 80.
+
+**Solution 1: Change Temp Mail Port**
+```bash
+# Edit docker-compose.yml
+nano docker-compose.yml
+
+# Change frontend ports from:
+# ports:
+#   - "80:80"
+# To:
+# ports:
+#   - "8080:80"
+
+# Restart
+docker-compose down
+docker-compose up -d
+```
+
+Access at: `http://your-ip:8080`
+
+**Solution 2: Use Reverse Proxy**
+
+If using Nginx Proxy Manager or Nginx:
+1. Change Temp Mail to port 8080 (as above)
+2. Configure reverse proxy to forward `yourdomain.com` → `localhost:8080`
+3. Access via your domain with SSL
+
+**Solution 3: Stop Conflicting Service**
+```bash
+# Find what's using port 80
+sudo lsof -i :80
+
+# Stop the service (if not needed)
+sudo systemctl stop nginx  # or apache2, or other service
+sudo systemctl disable nginx  # prevent auto-start
 ```
 
 ### Cannot login to admin account

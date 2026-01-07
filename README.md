@@ -106,6 +106,65 @@ server {
 }
 ```
 
+#### Option 2: Nginx Proxy Manager (NPM)
+
+Nginx Proxy Manager provides a user-friendly web interface for managing reverse proxies and SSL certificates.
+
+**Installation:**
+```bash
+# Create NPM directory
+mkdir -p ~/nginx-proxy-manager
+cd ~/nginx-proxy-manager
+
+# Create docker-compose.yml
+cat > docker-compose.yml << 'EOF'
+version: '3.8'
+services:
+  npm:
+    image: 'jc21/nginx-proxy-manager:latest'
+    restart: unless-stopped
+    ports:
+      - '80:80'    # HTTP
+      - '81:81'    # Admin interface
+      - '443:443'  # HTTPS
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+EOF
+
+# Start NPM
+docker-compose up -d
+```
+
+**Configuration:**
+1. Access NPM admin interface at `http://your-server-ip:81`
+2. Default login: `admin@example.com` / `changeme` (change immediately)
+3. Click "Proxy Hosts" → "Add Proxy Host"
+4. Configure:
+   - **Domain Names**: `mail.example.com`
+   - **Scheme**: `http`
+   - **Forward Hostname/IP**: `your-server-ip` or `host.docker.internal`
+   - **Forward Port**: `80` (your Temp Mail frontend port)
+   - Enable "Block Common Exploits"
+   - Enable "Websockets Support"
+5. Go to "SSL" tab:
+   - Select "Request a new SSL Certificate"
+   - Enable "Force SSL"
+   - Enable "HTTP/2 Support"
+   - Agree to Let's Encrypt Terms
+   - Click "Save"
+
+**Note**: If running NPM on the same server, modify Temp Mail's docker-compose.yml to use a different port (e.g., 8080):
+```yaml
+frontend:
+  ports:
+    - "8080:80"  # Change from 80:80
+```
+
+Then use `localhost:8080` as the forward port in NPM.
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#nginx-proxy-manager) for detailed NPM setup instructions.
+
 ## 📖 User Guide
 
 ### For Users

@@ -153,7 +153,233 @@ sudo systemctl restart nginx
 sudo certbot --nginx -d mail.example.com
 ```
 
-##### Option B: Cloudflare
+##### Option B: Nginx Proxy Manager
+
+Nginx Proxy Manager (NPM) provides a user-friendly web interface for managing reverse proxies and SSL certificates without manual Nginx configuration.
+
+**Prerequisites:**
+- Docker and Docker Compose installed
+- Ports 80, 443, and 81 available
+- Domain DNS configured
+
+**Installation:**
+
+1. **Create NPM directory and docker-compose.yml**
+   ```bash
+   # Create directory
+   mkdir -p ~/nginx-proxy-manager
+   cd ~/nginx-proxy-manager
+   
+   # Create docker-compose file
+   cat > docker-compose.yml << 'EOF'
+   version: '3.8'
+   services:
+     npm:
+       image: 'jc21/nginx-proxy-manager:latest'
+       restart: unless-stopped
+       ports:
+         - '80:80'      # Public HTTP Port
+         - '443:443'    # Public HTTPS Port
+         - '81:81'      # Admin Web Port
+       environment:
+         DB_SQLITE_FILE: "/data/database.sqlite"
+       volumes:
+         - ./data:/data
+         - ./letsencrypt:/etc/letsencrypt
+       networks:
+         - npm-network
+   
+   networks:
+     npm-network:
+       driver: bridge
+   EOF
+   ```
+
+2. **Start Nginx Proxy Manager**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Access Admin Interface**
+   - Open browser to `http://your-server-ip:81`
+   - Default credentials:
+     - Email: `admin@example.com`
+     - Password: `changeme`
+   - **Change credentials immediately** after first login!
+
+**Configure Temp Mail Reverse Proxy:**
+
+1. **Modify Temp Mail Port** (if NPM is on same server)
+   
+   Since NPM needs port 80, update Temp Mail's docker-compose.yml:
+   ```bash
+   cd /path/to/temp-mail
+   nano docker-compose.yml
+   ```
+   
+   Change frontend ports:
+   ```yaml
+   frontend:
+     # ... other config ...
+     ports:
+       - "8080:80"  # Change from 80:80 to 8080:80
+   ```
+   
+   Restart Temp Mail:
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+2. **Add Proxy Host in NPM**
+   
+   In NPM Admin Interface:
+   - Click "Hosts" → "Proxy Hosts"
+   - Click "Add Proxy Host"
+   
+   **Details Tab:**
+   - **Domain Names**: `mail.example.com`
+   - **Scheme**: `http`
+   - **Forward Hostname/IP**: 
+     - If NPM and Temp Mail on same server: Use host IP (e.g., `192.168.1.100`) or `host.docker.internal`
+     - If on different servers: Use Temp Mail server IP
+   - **Forward Port**: `8080` (or whatever port you configured)
+   - **Cache Assets**: Enable (optional, improves performance)
+   - **Block Common Exploits**: Enable (recommended)
+   - **Websockets Support**: Enable (recommended)
+   - **Access List**: None (unless you want IP restrictions)
+   
+   **Custom Locations** (optional, add if needed):
+   ```
+   location /api/ {
+     proxy_pass http://your-ip:3000/;
+   }
+   ```
+   
+   **SSL Tab:**
+   - **SSL Certificate**: Select "Request a new SSL Certificate"
+   - **Force SSL**: Enable
+   - **HTTP/2 Support**: Enable
+   - **HSTS Enabled**: Enable (recommended)
+   - **Email Address for Let's Encrypt**: Your email
+   - **I Agree to the Let's Encrypt Terms of Service**: Check
+   - Click "Save"
+
+3. **Wait for Certificate**
+   - NPM will automatically request and configure Let's Encrypt SSL
+   - This usually takes 10-30 seconds
+   - Certificate auto-renews before expiration
+
+4. **Verify Setup**
+   ```bash
+   # Test HTTPS access
+   curl -I https://mail.example.com
+   
+   # Check certificate
+   openssl s_client -connect mail.example.com:443 -servername mail.example.com
+   ```
+
+**Advanced NPM Configuration:**
+
+**Docker Network Integration** (recommended for same-server setup):
+
+1. Connect NPM to Temp Mail network:
+   ```bash
+   # In NPM docker-compose.yml, add external network
+   networks:
+     npm-network:
+       driver: bridge
+     tempmail-network:
+       external: true
+   ```
+   
+   Update NPM service:
+   ```yaml
+   services:
+     npm:
+       # ... other config ...
+       networks:
+         - npm-network
+         - tempmail-network
+   ```
+
+2. Restart NPM:
+   ```bash
+   docker-compose down
+   docker-compose up -d
+   ```
+
+3. In NPM proxy host configuration, use container name:
+   - **Forward Hostname/IP**: `tempmail-frontend`
+   - **Forward Port**: `80`
+
+**Security Best Practices:**
+
+1. **Change Admin Port** (optional but recommended):
+   ```yaml
+   ports:
+     - '8181:81'  # Access admin on port 8181 instead
+   ```
+
+2. **Restrict Admin Access**:
+   - Create "Access Lists" in NPM
+   - Allow only specific IPs to admin interface
+   - Apply access list to port 81
+
+3. **Enable HSTS**:
+   - In Proxy Host SSL settings
+   - Enables "HTTP Strict Transport Security"
+
+4. **Configure Firewall**:
+   ```bash
+   # Allow only necessary ports
+   sudo ufw allow 80/tcp
+   sudo ufw allow 443/tcp
+   sudo ufw allow 81/tcp  # Restrict this with IP if possible
+   ```
+
+**Backup NPM Configuration:**
+
+```bash
+# Backup data directory
+cd ~/nginx-proxy-manager
+tar -czf npm-backup-$(date +%Y%m%d).tar.gz data/ letsencrypt/
+
+# Restore from backup
+tar -xzf npm-backup-20240101.tar.gz
+docker-compose restart
+```
+
+**Troubleshooting NPM:**
+
+1. **Certificate Request Fails**:
+   - Verify DNS points to correct IP
+   - Check ports 80/443 are accessible from internet
+   - Ensure no other service using these ports
+   - Check NPM logs: `docker-compose logs -f npm`
+
+2. **502 Bad Gateway**:
+   - Verify Temp Mail is running: `docker ps`
+   - Check forward IP/port configuration
+   - Test connectivity: `curl http://forward-ip:forward-port`
+   - Check NPM logs
+
+3. **Cannot Access Admin Interface**:
+   - Verify port 81 is not blocked by firewall
+   - Check NPM container is running: `docker ps`
+   - Try accessing from local network first
+
+4. **Certificate Not Renewing**:
+   - NPM auto-renews 30 days before expiration
+   - Check NPM logs for renewal attempts
+   - Manually trigger renewal in NPM interface
+
+**NPM Resources:**
+- Official Documentation: https://nginxproxymanager.com/
+- GitHub: https://github.com/NginxProxyManager/nginx-proxy-manager
+- Community Support: GitHub Discussions
+
+##### Option C: Cloudflare
 
 1. Add domain to Cloudflare
 2. Update nameservers at registrar
