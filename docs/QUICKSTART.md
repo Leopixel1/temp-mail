@@ -126,10 +126,16 @@ Check your inbox in the web interface - email should appear within seconds!
 ### Secure Your System
 
 1. **Enable HTTPS** (recommended for production):
+   
+   **Option 1: Nginx + Certbot (Command Line)**
    ```bash
    sudo apt install certbot python3-certbot-nginx
    sudo certbot --nginx -d mail.example.com
    ```
+   
+   **Option 2: Nginx Proxy Manager (Web GUI)**
+   - Easy web-based SSL management
+   - See [docs/DEPLOYMENT.md](DEPLOYMENT.md#nginx-proxy-manager) for setup guide
 
 2. **Configure Firewall**:
    ```bash
