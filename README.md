@@ -151,8 +151,8 @@ docker-compose up -d
 4. Configure:
    - **Domain Names**: `mail.example.com`
    - **Scheme**: `http`
-   - **Forward Hostname/IP**: `your-server-ip` or `host.docker.internal`
-   - **Forward Port**: `80` (your Temp Mail frontend port)
+   - **Forward Hostname/IP**: `your-server-ip` or `host.docker.internal` (for Docker)
+   - **Forward Port**: `80` (or `8080` if you change Temp Mail's port - see note below)
    - Enable "Block Common Exploits"
    - Enable "Websockets Support"
 5. Go to "SSL" tab:
@@ -162,14 +162,23 @@ docker-compose up -d
    - Agree to Let's Encrypt Terms
    - Click "Save"
 
-**Note**: If running NPM on the same server, modify Temp Mail's docker-compose.yml to use a different port (e.g., 8080):
-```yaml
-frontend:
-  ports:
-    - "8080:80"  # Change from 80:80
-```
+**Port Conflict Resolution**: If running NPM on the same server as Temp Mail, you'll need to change Temp Mail's port since both use port 80 by default:
 
-Then use `localhost:8080` as the forward port in NPM.
+1. Edit Temp Mail's docker-compose.yml:
+   ```yaml
+   frontend:
+     ports:
+       - "8080:80"  # Change from 80:80
+   ```
+
+2. Restart Temp Mail:
+   ```bash
+   docker-compose down && docker-compose up -d
+   ```
+
+3. In NPM proxy host configuration, use:
+   - **Forward Hostname/IP**: `your-server-ip` or `host.docker.internal`
+   - **Forward Port**: `8080`
 
 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#option-b-nginx-proxy-manager) for detailed NPM setup instructions.
 

@@ -334,7 +334,7 @@ This allows NPM to communicate directly with Temp Mail containers using containe
    docker-compose up -d
    ```
 
-3. In NPM proxy host configuration, use container name:
+4. In NPM proxy host configuration, use container name:
    - **Forward Hostname/IP**: `tempmail-frontend`
    - **Forward Port**: `80`
 
