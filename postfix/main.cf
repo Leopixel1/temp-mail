@@ -1,0 +1,43 @@
+# Basic Postfix configuration for catch-all temporary mail
+
+# Network settings
+inet_interfaces = all
+inet_protocols = ipv4
+
+# Mail directory
+mail_spool_directory = /var/mail
+
+# Domain configuration
+myhostname = DOMAIN_PLACEHOLDER
+mydomain = DOMAIN_PLACEHOLDER
+myorigin = $mydomain
+mydestination = $mydomain, localhost
+
+# Relay settings
+relayhost =
+relay_domains = $mydomain
+
+# Catch-all virtual alias
+virtual_alias_domains = $mydomain
+virtual_alias_maps = pcre:/etc/postfix/virtual_alias
+
+# Message size limit (10MB)
+message_size_limit = 10485760
+
+# Disable local delivery to system users
+local_recipient_maps =
+
+# Security settings
+smtpd_banner = $myhostname ESMTP
+smtpd_helo_required = yes
+disable_vrfy_command = yes
+
+# Rate limiting
+smtpd_client_connection_count_limit = 10
+smtpd_client_connection_rate_limit = 30
+
+# Trust localhost
+mynetworks = 127.0.0.0/8
+
+# Logging
+maillog_file = /dev/stdout
