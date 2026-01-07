@@ -309,17 +309,33 @@ sudo certbot --nginx -d mail.example.com
 - ✅ Easy management of multiple domains
 - ✅ Built-in security features (HSTS, HTTP/2)
 - ✅ No manual Nginx configuration required
+- ✅ Can run on external/separate server (recommended)
 
-**Quick Setup:**
-1. Install NPM using Docker
-2. Access admin interface on port 81
-3. Add proxy host for your domain
-4. Enable SSL with one click
-5. NPM handles everything automatically
+**Deployment Options:**
 
-**Important**: If running NPM on the same server as Temp Mail, change Temp Mail's frontend port from `80:80` to `8080:80` in Temp Mail's docker-compose.yml to avoid port conflicts.
+**Option 1: External NPM Server (Recommended)**
+- NPM on separate server from Temp Mail
+- No port conflicts
+- Keep Temp Mail on default port 80
+- Point your domain to NPM server
+- NPM forwards traffic to Temp Mail server
 
-**Full Guide**: See [docs/DEPLOYMENT.md](DEPLOYMENT.md#option-b-nginx-proxy-manager) for complete NPM setup instructions.
+**Option 2: Same Server**
+- NPM and Temp Mail on same machine
+- Requires changing Temp Mail port from 80 to 8080
+- Use `localhost` or `host.docker.internal` for forwarding
+
+**Quick Setup (External Server):**
+1. Install NPM on your NPM server using Docker
+2. Access admin interface at `http://npm-server-ip:81`
+3. Add proxy host with:
+   - Domain: `mail.example.com`
+   - Forward to: `tempmail-server-ip:80`
+   - Enable SSL
+4. Point domain DNS to NPM server
+5. NPM automatically handles SSL
+
+**Full Guide**: See [docs/DEPLOYMENT.md](DEPLOYMENT.md#option-b-nginx-proxy-manager) for complete NPM setup instructions for both scenarios.
 
 ### Should I allow open registration?
 

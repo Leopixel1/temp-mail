@@ -209,7 +209,63 @@ Nginx Proxy Manager (NPM) provides a user-friendly web interface for managing re
 
 **Configure Temp Mail Reverse Proxy:**
 
-1. **Modify Temp Mail Port** (if NPM is on same server)
+NPM can be deployed in two scenarios:
+
+**Scenario 1: External NPM Server (Recommended)**
+
+When NPM is running on a separate server from Temp Mail:
+
+1. **No Temp Mail configuration changes needed** - Keep Temp Mail on default port 80
+
+2. **Configure Firewall on Temp Mail Server** (optional but recommended):
+   ```bash
+   # Allow NPM server to access Temp Mail
+   sudo ufw allow from NPM_SERVER_IP to any port 80 proto tcp
+   
+   # Optionally block public HTTP access (force traffic through NPM)
+   sudo ufw deny 80/tcp
+   sudo ufw allow from NPM_SERVER_IP to any port 80 proto tcp
+   ```
+
+3. **Add Proxy Host in NPM**
+   
+   In NPM Admin Interface on the **NPM server**:
+   - Click "Hosts" → "Proxy Hosts"
+   - Click "Add Proxy Host"
+   
+   **Details Tab:**
+   - **Domain Names**: `mail.example.com`
+   - **Scheme**: `http`
+   - **Forward Hostname/IP**: `TEMPMAIL_SERVER_IP` (public IP or private IP if on same network)
+   - **Forward Port**: `80` (Temp Mail's default port)
+   - **Cache Assets**: Enable (optional, improves performance)
+   - **Block Common Exploits**: Enable (recommended)
+   - **Websockets Support**: Enable (recommended)
+   
+   **SSL Tab:**
+   - **SSL Certificate**: Select "Request a new SSL Certificate"
+   - **Force SSL**: Enable
+   - **HTTP/2 Support**: Enable
+   - **HSTS Enabled**: Enable (recommended)
+   - **Email Address for Let's Encrypt**: Your email
+   - **I Agree to the Let's Encrypt Terms of Service**: Check
+   - Click "Save"
+
+4. **DNS Configuration**
+   - Point `mail.example.com` A record to **NPM server IP** (not Temp Mail server)
+   - MX record still points to Temp Mail server for email reception
+
+5. **Verify Setup**
+   ```bash
+   # From any machine
+   curl -I https://mail.example.com
+   ```
+
+**Scenario 2: Same Server Deployment**
+
+When NPM and Temp Mail are on the same server:
+
+1. **Modify Temp Mail Port**
    
    Since NPM needs port 80, update Temp Mail's docker-compose.yml:
    ```bash
@@ -240,21 +296,11 @@ Nginx Proxy Manager (NPM) provides a user-friendly web interface for managing re
    **Details Tab:**
    - **Domain Names**: `mail.example.com`
    - **Scheme**: `http`
-   - **Forward Hostname/IP**: 
-     - If NPM and Temp Mail on same server: Use host IP (e.g., `192.168.1.100`) or `host.docker.internal`
-     - If on different servers: Use Temp Mail server IP
-   - **Forward Port**: `8080` (or whatever port you configured)
+   - **Forward Hostname/IP**: `localhost`, `127.0.0.1`, or `host.docker.internal`
+   - **Forward Port**: `8080` (the port you configured above)
    - **Cache Assets**: Enable (optional, improves performance)
    - **Block Common Exploits**: Enable (recommended)
    - **Websockets Support**: Enable (recommended)
-   - **Access List**: None (unless you want IP restrictions)
-   
-   **Custom Locations** (optional, add if needed):
-   ```
-   location /api/ {
-     proxy_pass http://your-ip:3000/;
-   }
-   ```
    
    **SSL Tab:**
    - **SSL Certificate**: Select "Request a new SSL Certificate"
