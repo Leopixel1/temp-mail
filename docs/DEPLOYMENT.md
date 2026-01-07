@@ -477,6 +477,7 @@ Quarterly:
 
 For deployment issues:
 - Check logs: `docker-compose logs -f`
+- See **[FAQ](FAQ.md)** for common questions and troubleshooting
 - GitHub Issues
 - Community forums
 

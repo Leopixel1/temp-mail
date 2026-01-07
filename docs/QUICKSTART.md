@@ -294,10 +294,11 @@ grep -E "ADMIN_EMAIL|ADMIN_PASSWORD" .env
 
 ## Getting Help
 
-- 📖 Full documentation: `README.md`
-- 🔧 Admin guide: `docs/ADMIN_GUIDE.md`
-- 🚀 Deployment guide: `docs/DEPLOYMENT.md`
-- 🐛 Issues: https://github.com/Leopixel1/temp-mail/issues
+- 📖 **Full documentation**: `README.md`
+- ❓ **FAQ**: `docs/FAQ.md` - Answers to common questions including router port configuration
+- 🔧 **Admin guide**: `docs/ADMIN_GUIDE.md`
+- 🚀 **Deployment guide**: `docs/DEPLOYMENT.md`
+- 🐛 **Issues**: https://github.com/Leopixel1/temp-mail/issues
 
 ## Performance Tips
 
