@@ -273,6 +273,30 @@ docker-compose logs -f backend | grep "Email received"
 7. **CORS Configuration**: Controlled cross-origin access
 8. **Email Sandboxing**: iframes with sandbox attribute
 
+## ❓ Frequently Asked Questions
+
+### Which ports do I need to open on my router?
+
+For home/self-hosted deployments, configure port forwarding for:
+- **Port 25** (SMTP) - Required for receiving emails
+- **Port 80** (HTTP) - Required for web interface
+- **Port 443** (HTTPS) - Recommended for secure access
+
+See the [FAQ](docs/FAQ.md#which-ports-do-i-need-to-open-on-my-router) for detailed router configuration instructions.
+
+### Common Questions
+
+For answers to questions about:
+- Router port forwarding setup
+- DNS configuration
+- Installation requirements
+- Security best practices
+- Troubleshooting
+- Backup and maintenance
+- Performance optimization
+
+**See the comprehensive [FAQ document](docs/FAQ.md)** for detailed answers.
+
 ## 🐛 Troubleshooting
 
 ### Emails Not Received
@@ -316,6 +340,8 @@ docker-compose ps frontend
 ```bash
 docker-compose logs frontend
 ```
+
+**For more troubleshooting help**, see the [FAQ](docs/FAQ.md#troubleshooting).
 
 ## 📦 Backup & Restore
 
@@ -379,7 +405,8 @@ Contributions welcome! Please feel free to submit issues and pull requests.
 ## 📞 Support
 
 For issues and questions:
-- GitHub Issues: https://github.com/Leopixel1/temp-mail/issues
+- **FAQ**: See [docs/FAQ.md](docs/FAQ.md) for answers to common questions
+- **GitHub Issues**: https://github.com/Leopixel1/temp-mail/issues
 
 ## 🙏 Acknowledgments
 
