@@ -285,22 +285,36 @@ Nginx Proxy Manager (NPM) provides a user-friendly web interface for managing re
 
 1. Connect NPM to Temp Mail network:
    ```bash
-   # In NPM docker-compose.yml, add external network
+   # Edit NPM's docker-compose.yml
+   cd ~/nginx-proxy-manager
+   nano docker-compose.yml
+   ```
+   
+   Update to this complete configuration:
+   ```yaml
+   version: '3.8'
+   services:
+     npm:
+       image: 'jc21/nginx-proxy-manager:latest'
+       restart: unless-stopped
+       ports:
+         - '80:80'
+         - '443:443'
+         - '81:81'
+       environment:
+         DB_SQLITE_FILE: "/data/database.sqlite"
+       volumes:
+         - ./data:/data
+         - ./letsencrypt:/etc/letsencrypt
+       networks:
+         - npm-network
+         - tempmail-network  # Add this line
+   
    networks:
      npm-network:
        driver: bridge
-     tempmail-network:
+     tempmail-network:      # Add this section
        external: true
-   ```
-   
-   Update NPM service:
-   ```yaml
-   services:
-     npm:
-       # ... other config ...
-       networks:
-         - npm-network
-         - tempmail-network
    ```
 
 2. Restart NPM:

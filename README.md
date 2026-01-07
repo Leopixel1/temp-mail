@@ -169,7 +169,7 @@ frontend:
 
 Then use `localhost:8080` as the forward port in NPM.
 
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#nginx-proxy-manager) for detailed NPM setup instructions.
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md#option-b-nginx-proxy-manager) for detailed NPM setup instructions.
 
 ## 📖 User Guide
 

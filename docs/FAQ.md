@@ -317,7 +317,7 @@ sudo certbot --nginx -d mail.example.com
 4. Enable SSL with one click
 5. NPM handles everything automatically
 
-**Important**: If running NPM on the same server as Temp Mail, change Temp Mail's frontend port from `80:80` to `8080:80` in docker-compose.yml to avoid port conflicts.
+**Important**: If running NPM on the same server as Temp Mail, change Temp Mail's frontend port from `80:80` to `8080:80` in Temp Mail's docker-compose.yml to avoid port conflicts.
 
 **Full Guide**: See [docs/DEPLOYMENT.md](DEPLOYMENT.md#option-b-nginx-proxy-manager) for complete NPM setup instructions.
 
