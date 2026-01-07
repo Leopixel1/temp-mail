@@ -142,6 +142,8 @@ EOF
 docker-compose up -d
 ```
 
+> **Note**: This basic setup uses NPM's own network. For advanced Docker network integration to directly connect NPM with Temp Mail containers, see the [detailed guide](docs/DEPLOYMENT.md#option-b-nginx-proxy-manager).
+
 **Configuration:**
 1. Access NPM admin interface at `http://your-server-ip:81`
 2. Default login: `admin@example.com` / `changeme` (change immediately)

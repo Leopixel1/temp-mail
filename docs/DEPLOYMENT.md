@@ -283,7 +283,18 @@ Nginx Proxy Manager (NPM) provides a user-friendly web interface for managing re
 
 **Docker Network Integration** (recommended for same-server setup):
 
-1. Connect NPM to Temp Mail network:
+This allows NPM to communicate directly with Temp Mail containers using container names instead of IP addresses.
+
+**Prerequisites**: Temp Mail must be running first to create the `tempmail-network`.
+
+1. Verify Temp Mail network exists:
+   ```bash
+   docker network ls | grep tempmail-network
+   ```
+   
+   If Temp Mail is running, you should see `tempmail-network` listed.
+
+2. Connect NPM to Temp Mail network:
    ```bash
    # Edit NPM's docker-compose.yml
    cd ~/nginx-proxy-manager
@@ -313,11 +324,11 @@ Nginx Proxy Manager (NPM) provides a user-friendly web interface for managing re
    networks:
      npm-network:
        driver: bridge
-     tempmail-network:      # Add this section
+     tempmail-network:      # Add this section - references external network created by Temp Mail
        external: true
    ```
 
-2. Restart NPM:
+3. Restart NPM:
    ```bash
    docker-compose down
    docker-compose up -d
