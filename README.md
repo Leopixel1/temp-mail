@@ -15,7 +15,7 @@ A complete, production-ready temporary email system similar to temp-mail.org, bu
 
 ## 🔧 Technology Stack
 
-- **Backend**: Node.js + TypeScript + Express
+- **Backend**: Node.js 20 + TypeScript + Express
 - **Frontend**: React + Vite
 - **Database**: PostgreSQL + Prisma ORM
 - **SMTP**: Postfix (catch-all configuration)
@@ -28,6 +28,7 @@ A complete, production-ready temporary email system similar to temp-mail.org, bu
 - Root or sudo access
 - Domain name with DNS access
 - Minimum 2GB RAM, 10GB disk space
+- Node.js 18+ (if building locally; Docker handles this automatically)
 
 ## 🚀 Quick Installation
 
