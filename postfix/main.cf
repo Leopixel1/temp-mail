@@ -11,7 +11,7 @@ mail_spool_directory = /var/mail
 myhostname = DOMAIN_PLACEHOLDER
 mydomain = DOMAIN_PLACEHOLDER
 myorigin = $mydomain
-mydestination = $mydomain, localhost
+mydestination = localhost
 
 # Relay settings
 relayhost =
