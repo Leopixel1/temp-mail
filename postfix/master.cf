@@ -34,4 +34,4 @@ scache    unix  -       -       n       -       1       scache
 
 # Custom transport for email processing
 receive-email unix -     n       n       -       -       pipe
-  flags=F user=root argv=/usr/bin/node /app/backend/src/receive-email.js
+  flags=F user=root argv=/usr/bin/node /opt/email-processor/receive-email.js

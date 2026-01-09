@@ -19,6 +19,21 @@ services:
       timeout: 5s
       retries: 5
 
+  db-init:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tempmail-db-init
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tempmail}:${POSTGRES_PASSWORD:-tempmail123}@postgres:5432/${POSTGRES_DB:-tempmail}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - tempmail-network
+    command: npm run prisma:push
+    restart: "no"
+
   backend:
     build:
       context: ./backend
@@ -41,19 +56,14 @@ services:
       DELETE_OLD_ON_LIMIT: ${DELETE_OLD_ON_LIMIT:-true}
       RATE_LIMIT_WINDOW_MS: ${RATE_LIMIT_WINDOW_MS:-900000}
       RATE_LIMIT_MAX_REQUESTS: ${RATE_LIMIT_MAX_REQUESTS:-100}
-    volumes:
-      - ./backend/src/receive-email.js:/app/backend/src/receive-email.js:ro
     depends_on:
       postgres:
         condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
     networks:
       - tempmail-network
     restart: unless-stopped
-    command: >
-      sh -c "
-        npm run prisma:push &&
-        npm start
-      "
 
   frontend:
     build:
@@ -78,15 +88,16 @@ services:
     hostname: ${DOMAIN}
     environment:
       DOMAIN: ${DOMAIN}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-tempmail}:${POSTGRES_PASSWORD:-tempmail123}@postgres:5432/${POSTGRES_DB:-tempmail}
     ports:
       - "25:25"
-    volumes:
-      - ./backend/src/receive-email.js:/app/backend/src/receive-email.js:ro
-      - ./backend/node_modules:/app/backend/node_modules:ro
-      - ./backend/prisma:/app/backend/prisma:ro
     depends_on:
-      - backend
-      - postgres
+      backend:
+        condition: service_started
+      postgres:
+        condition: service_started
+      db-init:
+        condition: service_completed_successfully
     networks:
       - tempmail-network
     restart: unless-stopped
