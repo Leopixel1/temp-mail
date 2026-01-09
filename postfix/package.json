@@ -1,0 +1,13 @@
+{
+  "name": "postfix-email-processor",
+  "version": "1.0.0",
+  "description": "Email processing script for Postfix",
+  "main": "receive-email.js",
+  "dependencies": {
+    "@prisma/client": "^5.9.0",
+    "mailparser": "^3.6.6"
+  },
+  "devDependencies": {
+    "prisma": "^5.9.0"
+  }
+}

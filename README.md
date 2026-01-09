@@ -26,9 +26,8 @@ A complete, production-ready temporary email system similar to temp-mail.org, bu
 
 This project uses **Node.js 20** (pinned in `.nvmrc` and Dockerfile) for stability and compatibility:
 
-- **Node 20 + Alpine**: Tested and stable with Prisma 5.9.0
-- **OpenSSL Compatibility**: Node 20-alpine includes OpenSSL 3.x, which is fully compatible with Prisma
-- **Prisma Engine**: Works correctly with the included versions - no additional OpenSSL configuration needed
+- **Node 20 + Debian**: Uses a Debian-based image (bookworm-slim) for reliable Prisma compatibility
+- **Prisma Engine**: Works correctly with Debian-based Node.js images - no additional configuration needed
 
 If you encounter Prisma-related issues during setup:
 1. Ensure you're using the exact Node version specified in `.nvmrc` (20)
@@ -399,6 +398,15 @@ For answers to questions about:
 **See the comprehensive [FAQ document](docs/FAQ.md)** for detailed answers.
 
 ## 🐛 Troubleshooting
+
+### Docker Compose Configuration
+
+Before starting services, validate your docker-compose.yml:
+```bash
+docker compose config
+```
+
+This command checks for syntax errors and shows the final configuration. If you see errors about "additional properties not allowed" or YAML syntax issues, review your docker-compose.yml file for proper indentation and structure.
 
 ### Emails Not Received
 
