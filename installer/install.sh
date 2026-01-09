@@ -196,8 +196,7 @@ echo -e "${GREEN}Configuration saved to .env${NC}"
 echo -e "${BLUE}Step 4: Building and starting containers...${NC}"
 
 # Build and start containers (using classic Docker builder for compatibility)
-export DOCKER_BUILDKIT=0
-docker-compose build
+DOCKER_BUILDKIT=0 docker-compose build
 docker-compose up -d
 
 echo -e "${GREEN}Containers started!${NC}"
