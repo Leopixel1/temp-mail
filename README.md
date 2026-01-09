@@ -22,6 +22,21 @@ A complete, production-ready temporary email system similar to temp-mail.org, bu
 - **Auth**: JWT tokens
 - **Deployment**: Docker + Docker Compose
 
+### Node.js & Prisma Compatibility
+
+This project uses **Node.js 20** (pinned in `.nvmrc` and Dockerfile) for stability and compatibility:
+
+- **Node 20 + Alpine**: Tested and stable with Prisma 5.9.0
+- **OpenSSL Compatibility**: Node 20-alpine includes OpenSSL 3.x, which is fully compatible with Prisma
+- **Prisma Engine**: Works correctly with the included versions - no additional OpenSSL configuration needed
+
+If you encounter Prisma-related issues during setup:
+1. Ensure you're using the exact Node version specified in `.nvmrc` (20)
+2. Run `docker-compose build --no-cache backend` to rebuild with fresh dependencies
+3. Check that Prisma client generation completes during build: `npm run prisma:generate`
+
+The Docker setup handles all version compatibility automatically - manual Node/OpenSSL configuration is not required.
+
 ## 📋 Prerequisites
 
 - Linux server (Ubuntu 22.04+ recommended)
@@ -403,6 +418,36 @@ telnet mail.example.com 25
 docker-compose logs postfix
 ```
 
+4. If you see "unknown user" or "transport lookup failure" errors:
+   - This indicates Postfix configuration needs rebuilding
+   - Solution:
+     ```bash
+     docker-compose build postfix
+     docker-compose up -d
+     ```
+   - **Note**: Simply restarting (`docker-compose restart`) is not sufficient after configuration changes
+
+### Postfix Catch-All Not Working
+
+If emails to random addresses are bounced with "unknown user":
+
+1. Verify the configuration was applied:
+```bash
+docker-compose exec postfix postconf mydestination
+# Should show: mydestination = localhost
+```
+
+2. Check virtual alias configuration:
+```bash
+docker-compose exec postfix postconf virtual_alias_domains virtual_alias_maps
+```
+
+3. Rebuild Postfix container (required after any config changes):
+```bash
+docker-compose build postfix
+docker-compose up -d
+```
+
 ### Database Connection Issues
 
 1. Check PostgreSQL status:
@@ -467,18 +512,44 @@ docker-compose start
 
 ## 🔄 Updates
 
+### Safe Update Workflow
+
 To update to a new version:
 
 ```bash
 # Pull latest changes
 git pull
 
-# Rebuild containers
+# Rebuild and restart all containers
 docker-compose up -d --build
 
 # Check status
 docker-compose ps
 ```
+
+### When to Use `--build`
+
+- **Configuration changes**: Always use `--build` after pulling updates that modify Dockerfiles or Postfix configuration
+- **Postfix updates**: After any changes to `postfix/main.cf`, `postfix/master.cf`, or `postfix/virtual_alias`, you must rebuild:
+  ```bash
+  docker-compose build postfix
+  docker-compose up -d
+  ```
+- **Backend updates**: After dependency or code changes:
+  ```bash
+  docker-compose build backend
+  docker-compose up -d
+  ```
+- **Simple restarts**: If only environment variables changed in `.env`, restart is sufficient:
+  ```bash
+  docker-compose restart
+  ```
+
+### Important Notes
+
+- Updates preserve your database and configuration (stored in Docker volumes)
+- Prisma migrations run automatically on backend startup
+- Always backup your database before major updates (see [Backup & Restore](#-backup--restore) section)
 
 ## 📄 License
 
