@@ -9,7 +9,7 @@
     "start": "node dist/index.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:push": "prisma db push"
+    "prisma:push": "prisma db push --accept-data-loss --skip-generate"
   },
   "keywords": ["temp-mail", "smtp", "email"],
   "author": "",
