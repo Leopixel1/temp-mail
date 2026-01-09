@@ -92,8 +92,10 @@ services:
     ports:
       - "25:25"
     depends_on:
-      - backend
-      - postgres
+      backend:
+        condition: service_started
+      postgres:
+        condition: service_started
       db-init:
         condition: service_completed_successfully
     networks:
