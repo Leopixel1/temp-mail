@@ -95,22 +95,24 @@ Instead, configure the **cloud firewall/security groups**:
 
 ### My ISP blocks port 25, what can I do?
 
-Many residential ISPs block outbound port 25 to prevent spam. Solutions:
+Port 25 is required for **receiving** mail from the public internet. If your ISP blocks it, direct home-hosted inbound mail usually won't work.
 
-1. **Contact your ISP** and request port 25 to be unblocked (mention running a mail server)
+1. **Ask your ISP to unblock port 25** (some providers allow this on request)
 
-2. **Use a cloud server** instead of home hosting (recommended for mail servers)
+2. **Use a VPS/cloud server for mail reception** (most reliable)
+   - Run Temp Mail directly on the VPS, or
+   - Run only Postfix on the VPS and forward processed mail to your home backend
 
-3. **Use an SMTP relay service** (advanced configuration):
-   - Mailgun
-   - SendGrid
-   - AWS SES
-   - Configure Postfix to relay through them
+3. **Use an inbound mail gateway / backup MX service** that accepts mail on port 25 and forwards it to you
+   - This can work when your ISP blocks direct inbound port 25
+   - Requires provider-specific configuration
 
-4. **Use alternative port** (not standard, requires sender configuration):
-   - Port 587 (submission port)
-   - Port 2525 (alternative)
-   - Note: Most mail servers won't send to non-standard ports
+4. **Use SMTP relay services for outbound only** (Mailgun/SendGrid/SES)
+   - Helpful for sending mail
+   - Does **not** solve inbound reception by itself
+
+5. **Alternative SMTP ports (587/2525) are not a full workaround for inbound mail**
+   - Other internet mail servers deliver to port 25 by default
 
 ### What is my public IP address?
 
